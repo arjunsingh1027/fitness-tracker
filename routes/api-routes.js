@@ -5,49 +5,37 @@ module.exports = function (app) {
 
     // get workouts
     app.get("/api/workouts", (req, res) => {
-        db.Workout.find({}).then(dbWorkout => {
-            dbWorkout.forEach(workout => {
-                var total = 0;
-                workout.exercises.forEach(e => {
-                    total += e.duration;
-                });
-                workout.totalDuration = total;
+        Workout.find({})
+            .then(dbWorkout => {
+                res.json(dbWorkout);
+            })
+            .catch(err => {
+                res.status(400).json(err);
             });
-
-            res.json(dbWorkout);
-        }).catch(err => {
-            res.json(err);
-        });
     });
 
     // create workout
-    app.post("/api/workouts", ({ body }, res) => {
-        db.Workout.create(body).then((dbWorkout => {
+    app.post("/api/workouts", (req, res) => {
+        Workout.create({}).then(dbWorkout => {
             res.json(dbWorkout);
-        })).catch(err => {
-            res.json(err);
+        }).catch(err => {
+            res.status(400).json(err);
         });
     });
 
     // add exercise
     app.put("/api/workouts/:id", (req, res) => {
-        db.Workout.findOneAndUpdate(
-            { _id: req.params.id },
-            {
-                $inc: { totalDuration: req.body.duration },
-                $push: { exercises: req.body }
-            },
-            { new: true }).then(dbWorkout => {
-                res.json(dbWorkout);
-            }).catch(err => {
-                res.json(err);
-            });
+        Workout.findByIdAndUpdate(req.params.id, {$push: {exercises: req.body}})
+        .then(dbWorkout => {
+            res.json(dbWorkout)
+        }).catch((err) => {
+            res.status(400).json(err)
+        })
     });
 
     // workouts in range
     app.get("/api/workouts/range", (req, res) => {
-        db.Workout.find({}).then(dbWorkout => {
-            console.log(dbWorkout);
+        Workout.find({}).then(dbWorkout => {
             res.json(dbWorkout);
         }).catch(err => {
             res.json(err);
